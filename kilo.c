@@ -216,6 +216,14 @@ struct editorSyntax HLDB[] = {
 #ifdef _WIN32
 static DWORD orig_console_input_mode;
 static DWORD orig_console_output_mode;
+static unsigned char editor_input_buffer[8];
+static int editor_input_length;
+static int editor_input_position;
+
+/* 判断 Unicode 字符转成的 UTF-8 字节是否还有待处理内容。 */
+static int editorWindowsInputPending(void) {
+    return editor_input_position < editor_input_length;
+}
 
 /* 中文提示以 UTF-8 窄字符串保存；启动时让 Windows 控制台按 UTF-8 解码输出。 */
 static void kiloConfigureConsoleEncoding(void) {
@@ -320,10 +328,17 @@ int editorReadKey(int fd) {
     int c;
 
     (void)fd;
-    c = _getch();
+    /* `_getwch` 直接取得 Unicode 字符；UTF-16 字符再编码为 UTF-8，
+     * 通过小队列拆分给沿用单字节接口的编辑逻辑。 */
+    if (editor_input_position < editor_input_length)
+        return editor_input_buffer[editor_input_position++];
+
+    editor_input_length = 0;
+    editor_input_position = 0;
+    c = _getwch();
     if (c == 0 || c == 224) {
-        /* Windows 控制台用第二个字节表示扩展键。 */
-        switch (_getch()) {
+        /* Windows 控制台用第二个宽字符表示扩展键。 */
+        switch (_getwch()) {
         case 72: return ARROW_UP;
         case 80: return ARROW_DOWN;
         case 75: return ARROW_LEFT;
@@ -335,6 +350,31 @@ int editorReadKey(int fd) {
         case 83: return DEL_KEY;
         default: return KEY_NULL;
         }
+    }
+    if (c >= 0xd800 && c <= 0xdbff) {
+        wchar_t wide_chars[2];
+        int low = _getwch();
+        int utf8_length;
+        if (low < 0xdc00 || low > 0xdfff) return '?';
+        wide_chars[0] = (wchar_t)c;
+        wide_chars[1] = (wchar_t)low;
+        utf8_length = WideCharToMultiByte(
+            CP_UTF8,0,wide_chars,2,(char *)editor_input_buffer,
+            sizeof(editor_input_buffer),NULL,NULL);
+        if (utf8_length <= 0) return '?';
+        editor_input_length = utf8_length;
+        editor_input_position = 1;
+        return editor_input_buffer[0];
+    }
+    if (c > 0x7f) {
+        wchar_t wide_char = (wchar_t)c;
+        int utf8_length = WideCharToMultiByte(
+            CP_UTF8,0,&wide_char,1,(char *)editor_input_buffer,
+            sizeof(editor_input_buffer),NULL,NULL);
+        if (utf8_length <= 0) return '?';
+        editor_input_length = utf8_length;
+        editor_input_position = 1;
+        return editor_input_buffer[0];
     }
     return c;
 #else
@@ -1218,6 +1258,16 @@ static char *editorPrompt(int fd) {
                        length < KILO_FILENAME_LEN) {
                 filename[length++] = (char)c;
                 filename[length] = '\0';
+#ifdef _WIN32
+                while (editorWindowsInputPending()) {
+                    int next = editorReadKey(fd);
+                    if (kiloIsPrintableByte((unsigned char)next) &&
+                        length < KILO_FILENAME_LEN) {
+                        filename[length++] = (char)next;
+                        filename[length] = '\0';
+                    }
+                }
+#endif
             }
         }
     }
@@ -1512,6 +1562,14 @@ void editorFind(int fd) {
         } else if (kiloIsPrintableByte((unsigned char)c)) {
             if (qlen < KILO_QUERY_LEN) {
                     query[qlen++] = (char)c;
+#ifdef _WIN32
+                    while (editorWindowsInputPending()) {
+                        int next = editorReadKey(fd);
+                        if (kiloIsPrintableByte((unsigned char)next) &&
+                            qlen < KILO_QUERY_LEN)
+                            query[qlen++] = (char)next;
+                    }
+#endif
                 query[qlen] = '\0';
                 last_match = -1;
             }
@@ -1702,6 +1760,11 @@ void editorProcessKeypress(int fd) {
         break;
     default:
         editorInsertChar(c);
+#ifdef _WIN32
+        /* 一次性插入同一个 Unicode 字符剩余的 UTF-8 字节，避免中间帧出现乱码。 */
+        while (editorWindowsInputPending())
+            editorInsertChar(editorReadKey(fd));
+#endif
         break;
     }
 
