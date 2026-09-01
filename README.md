@@ -71,6 +71,10 @@ inih 的中文注释、C/C++ API、Windows CMake 预设和编码边界见
 [`inih-cn/README.md`](inih-cn/README.md)。如果只需要 Kilo，可配置
 `-DKILO_BUILD_JSMN=OFF -DKILO_BUILD_INIH=OFF`。
 
+SDS 动态字符串库的中文说明、C API、分配器约定和构建测试入口见
+[`sds-cn/README.md`](sds-cn/README.md)。如只需要 Kilo，可同时配置
+`-DKILO_BUILD_JSMN=OFF -DKILO_BUILD_INIH=OFF -DKILO_BUILD_SDS=OFF`。
+
 ### GCC / Make
 
 ```bash

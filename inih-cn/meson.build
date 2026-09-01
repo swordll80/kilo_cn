@@ -6,7 +6,7 @@ project('inih',
     meson_version: '>=0.56.0'
 )
 
-#### options ####
+#### 选项 ####
 arg_static = []
 distro_install = get_option('distro_install')
 extra_args = []
@@ -62,14 +62,14 @@ endif
 if host_machine.system() == 'windows'
     lib = get_option('default_library')
     if lib == 'both'
-        error('default_library=both is not supported on Windows')
+        error('Windows 不支持 default_library=both')
     elif lib == 'shared'
         extra_args += '-DINI_SHARED_LIB'
         add_project_arguments('-DINI_SHARED_LIB_BUILDING', language: ['c', 'cpp'])
     endif
 endif
 
-#### inih ####
+#### inih C 库 ####
 inc_inih = include_directories('.')
 
 src_inih = files('ini.c')
@@ -88,7 +88,7 @@ if distro_install
 
     pkg.generate(lib_inih,
         name : 'inih',
-        description : 'simple .INI file parser',
+        description : '简洁的 .INI 文件解析器',
         extra_cflags : extra_args,
     )
 endif
@@ -103,7 +103,7 @@ if get_option('tests')
     subdir('tests')
 endif
 
-#### INIReader ####
+#### INIReader C++ 封装 ####
 if get_option('with_INIReader')
     add_languages(
         'cpp',
@@ -128,7 +128,7 @@ if get_option('with_INIReader')
 
         pkg.generate(lib_INIReader,
             name : 'INIReader',
-            description : 'simple .INI file parser for C++',
+            description : '用于 C++ 的简洁 .INI 文件解析器',
             extra_cflags : extra_args,
         )
     endif

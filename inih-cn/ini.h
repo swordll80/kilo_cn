@@ -14,6 +14,12 @@ https://github.com/benhoyt/inih
 #ifndef INI_H
 #define INI_H
 
+/* 使用 CMake 构建时，先加载由 CMake 生成的配置头文件；直接编译 ini.c
+   时不定义 INIH_USE_CMAKE_CONFIG，仍使用下面的默认宏值。 */
+#ifdef INIH_USE_CMAKE_CONFIG
+#include "inih_config.h"
+#endif
+
 /* 让该头文件可以直接用于 C++ 代码。 */
 #ifdef __cplusplus
 extern "C" {

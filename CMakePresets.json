@@ -16,7 +16,8 @@
         "CMAKE_C_STANDARD": "99",
         "CMAKE_C_STANDARD_REQUIRED": "ON",
         "CMAKE_C_EXTENSIONS": "OFF",
-        "KILO_BUILD_INIH": "ON"
+        "KILO_BUILD_INIH": "ON",
+        "KILO_BUILD_SDS": "ON"
       }
     },
     {
@@ -29,7 +30,8 @@
         "CMAKE_C_STANDARD": "99",
         "CMAKE_C_STANDARD_REQUIRED": "ON",
         "CMAKE_C_EXTENSIONS": "OFF",
-        "KILO_BUILD_INIH": "ON"
+        "KILO_BUILD_INIH": "ON",
+        "KILO_BUILD_SDS": "ON"
       }
     }
   ],

@@ -2,8 +2,8 @@
 
 ## 1. 项目概况
 
-本项目包含 Kilo 单文件终端文本编辑器、`jsmn-cn` 极简 JSON 标记解析器和
-`inih-cn` INI 文件解析器。Kilo 的核心数据模型仍然是按字节保存的行数组，
+本项目包含 Kilo 单文件终端文本编辑器、`jsmn-cn` 极简 JSON 标记解析器、
+`inih-cn` INI 文件解析器和 `sds-cn` 动态字符串库。Kilo 的核心数据模型仍然是按字节保存的行数组，
 终端界面仍然通过 VT100/ANSI 转义序列刷新；jsmn 仍保持单头文件、inih 仍
 保持原始 C/C++ API、解析状态机和测试输入。本次工作只补充中文体验、注释、
 说明文档和 Windows/VS2026 CMake 集成，不引入大型依赖。
@@ -25,13 +25,14 @@
 | 11 | jsmn 中文化 | 将 `jsmn-cn` 的 README、API 说明、示例和测试输出改为中文，保留 C API、宏和 JSON 示例字段 | 已实现 | MIT 许可证法律文本保留原文 |
 | 12 | jsmn 注释补全 | 为标记模型、解析状态、字符串转义、原始值、严格模式和测试辅助函数补充中文注释 | 已实现 | 只改注释和诊断文本，未改解析算法 |
 | 13 | jsmn 合并根 CMake | 根 `CMakeLists.txt` 提供 `jsmn` INTERFACE 头文件目标、两个示例和四个测试变体 | 已实现 | 通过 `KILO_BUILD_JSMN=OFF` 可只构建 Kilo |
-| 14 | jsmn CTest 回归 | 接入默认、`JSMN_STRICT`、`JSMN_PARENT_LINKS` 和组合模式测试 | 已验证 | 历史记录为 VS2026 x64 Release/Debug 均配置、构建通过，当前未重新执行 |
+| 14 | jsmn CTest 回归 | 接入默认、`JSMN_STRICT`、`JSMN_PARENT_LINKS` 和组合模式测试 | 已验证 | 根目录 VS2026 x64 Release 集成 CTest 中 4/4 通过 |
 | 15 | 中文键盘输入 | Windows 使用 `_getwch` 读取 Unicode 字符，转换为 UTF-8 字节队列后交给现有编辑逻辑 | 已实现 | 仍需在真实 Windows Terminal 中完整回归输入法、组合键和超宽字符 |
 | 16 | inih-cn 注释中文化 | 翻译 C/C++ 头文件、解析实现、示例、测试辅助代码和模糊测试注释；保留 SPDX、版权和 API 标识 | 已实现 | 解析算法、公开函数名、宏名和测试输入未改 |
 | 17 | inih-cn 文档总结 | 新增中文 README，记录 API、解析规则、宏选项、目录职责、Windows 编码边界和验证命令 | 已实现 | 上游链接和 BSD-3-Clause 法律文本保留 |
 | 18 | inih-cn CMake 配置 | 新增独立 CMake 入口、静态/DLL、C++ INIReader、示例和 CTest 配置；根 CMake 可选集成 | 已实现 | CMake/MSVC 实际构建结果见 inih 验证记录 |
 | 19 | inih-cn Windows 支持 | MSVC `/utf-8`、`/W4`、DLL 导入导出宏、MinGW 兼容和 `_wfopen` 路径说明 | 已实现 | INI 文件内容不做自动编码转换；目标机 Unicode 路径仍需调用方使用 `_wfopen` |
 | 20 | inih-cn CTest 回归 | 15 个 C 测试变体使用跨平台 CMake 脚本比较 baseline 输出 | 已验证 | MSVC x64 Release/Debug 均为 15/15 通过 |
+| 21 | sds-cn 中文化 | 中文 README、源码注释、测试输出、Changelog、Make/CMake 入口；保留 SDS C API、动态头部布局和 BSD 法律文本 | 已实现 | 已完成 MinGW 构建和 46 项回归；MSVC/真实项目接入仍需单独验证 |
 
 ## 3. 代码结构与数据管理风格
 
@@ -185,6 +186,8 @@ ctest --test-dir build/vs2026-x64 -C Release --output-on-failure
 - `inih-cn/tests/`：解析规则、长行、错误、字符串输入和堆分配测试；
 - `inih-cn/fuzzing/`：模糊测试辅助程序和脚本；
 - `inih-cn/CMakeLists.txt`：静态库/DLL、INIReader、示例和 CTest 入口；
+- `inih-cn/inih_config.h.in`：CMake 配置头模板，避免 Windows 编译器命令行
+  无法安全传递包含 `#` 的注释前缀；
 - `inih-cn/CMakePresets.json`：Windows x64 Release/Debug 的 NMake 预设；
 - `inih-cn/README.md`：中文使用说明、配置选项和验证边界。
 
@@ -207,6 +210,8 @@ ctest --test-dir build/vs2026-x64 -C Release --output-on-failure
 - `inih_inireader_example`、`inih_inireader_errors`：C++ 示例；
 - `inih_test_*`：15 个 C 回归测试，CTest 使用 `tests/verify_output.cmake` 比较
   `baseline_*.txt`（统一 CRLF/LF 换行差异），不依赖 Bash、`diff` 或 `tcc`；
+- `inih_config.h`：由 CMake 根据 `INI_*` 选项生成，供库和示例统一使用；直接
+  编译 `ini.c` 时不生成该文件，仍使用 `ini.h` 的默认值；
 - MSVC 目标统一使用 `/W4 /utf-8` 和 `_CRT_SECURE_NO_WARNINGS`，其他编译器
   使用 `-Wall -Wextra -pedantic`；不引入 Qt、vcpkg 或大型第三方库。
 
@@ -248,7 +253,46 @@ ctest --test-dir build/vs2026-x64 -C Release --output-on-failure
 Windows 目标机上的 Unicode 路径和 DLL 部署证据。当前尚未覆盖真实目标机的
 Unicode 路径、DLL 外部部署和 Linux GCC/Make 构建。
 
-## 11. 推荐验证命令
+## 11. sds-cn 子项目说明
+
+### 目录与职责
+
+- `sds-cn/sds.c`：SDS 2.0 的唯一实现文件，包含动态头部、扩容、追加、裁剪、
+  拆分、连接和分配器包装；`SDS_TEST_MAIN` 打开时包含内置回归测试入口。
+- `sds-cn/sds.h`：公开 `sds` 类型、长度/容量内联函数和全部 C API；Windows
+  的紧凑头部布局与 `ssize_t` 兼容定义集中在此处。
+- `sds-cn/sdsalloc.h`：`s_malloc`、`s_realloc`、`s_free` 三个分配器宏。
+- `sds-cn/testhelp.h`：内置测试输出和汇总辅助宏，普通测试状态已中文化。
+- `sds-cn/Makefile`：保持上游单命令测试入口，并补充 `make test`。
+- `sds-cn/CMakeLists.txt`、`sds-cn/CMakePresets.json`：独立 CMake 构建和 CTest
+  入口；根 CMake 通过 `KILO_BUILD_SDS` 选择是否集成。
+- `sds-cn/README.md`：中文 API、内存布局、分配器、编码边界和验证说明；文档
+  后半部分保留上游英文参考。
+
+### 数据与 API 约定
+
+- SDS 对外是 `char *`，头部位于返回指针之前；`sdslen()`、`sdsavail()` 和
+  `sdsalloc()` 读取的是字节长度和容量，不是 Unicode 字符数。
+- 可能扩容的函数返回新指针，调用方必须接收返回值；内存不足返回 `NULL`。
+  `sdsfree(NULL)` 安全，`sdsclear()` 只清空内容并保留已有容量。
+- `sdsnewlen()`、`sdscatlen()`、`sdscpylen()` 和 `sdssplitlen()` 按显式字节
+  长度处理，可保存中间包含空字符的二进制数据。
+- SDS 2.0 根据长度选择 5/8/16/32/64 位头部；类型 5 不记录剩余空间，追加
+  时会升级到可以记录容量的头部类型。
+- `sdsalloc.h` 默认使用 libc 分配器；替换三个宏即可接入项目分配器，不改变
+  公开 API。
+
+### sds-cn 验证记录
+
+- MinGW-w64 GCC 15.2 使用 `-Wall -Wextra -std=c99 -pedantic -O2` 完成构建，
+  `sds-test` 运行结果为 46/46 通过。
+- 根 CMake 新增 `sds` 静态库和 `sds_test` CTest；已完成配置文件静态检查，
+  根工程的实际 Release/Debug 构建与 CTest 需要在 VS2026 Developer Command
+  Prompt 中重新执行并补录。
+- 尚未覆盖真实项目接入、跨模块分配器替换、Windows/MSVC 目标机运行和中文
+  文本按字节处理边界；这些不应标记为已验证。
+
+## 12. 推荐验证命令
 
 ```powershell
 cmake --preset vs2026-x64

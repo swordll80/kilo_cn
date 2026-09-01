@@ -83,3 +83,10 @@ if(KILO_BUILD_INIH)
     # CMakeLists.txt 负责 Windows/MSVC、MinGW 和 CTest 的具体配置。
     add_subdirectory(inih-cn)
 endif()
+
+option(KILO_BUILD_SDS "构建 sds-cn 动态字符串库和单元测试" ON)
+
+if(KILO_BUILD_SDS)
+    # sds-cn 保持原 SDS C API 和内存布局，只在根工程中补充统一构建入口。
+    add_subdirectory(sds-cn)
+endif()

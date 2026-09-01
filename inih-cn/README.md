@@ -126,7 +126,11 @@ ctest --test-dir build/vs2026-x64 --output-on-failure
 - `-DINIH_BUILD_INIREADER=OFF`：不构建 C++ 封装；
 - `-DINIH_BUILD_EXAMPLES=OFF`：不构建示例；
 - `-DINIH_BUILD_TESTS=OFF`：不配置 CTest；
-- `-DINI_MAX_LINE=1000`、`-DINI_ALLOW_NO_VALUE=ON` 等：设置对应解析宏。
+- `-DINI_MAX_LINE=1000`、`-DINI_ALLOW_NO_VALUE=ON`、
+  `"-DINI_INLINE_COMMENT_PREFIXES=#"` 等：设置对应解析宏。
+
+这些 CMake 选项会写入构建目录中的 `inih_config.h`，库和示例会自动包含它；
+直接使用 `ini.c` 时则继续使用 `ini.h` 自带的默认值。
 
 Windows DLL 构建会通过 `INI_SHARED_LIB` 和 `INI_SHARED_LIB_BUILDING` 自动设置
 `__declspec(dllexport/dllimport)`。静态库不会引入 DLL 导入符号。
