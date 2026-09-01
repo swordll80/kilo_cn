@@ -1,0 +1,46 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "vs2026-x64",
+      "displayName": "VS2026 x64 Release",
+      "generator": "NMake Makefiles",
+      "binaryDir": "${sourceDir}/build/vs2026-x64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_STANDARD": "99",
+        "CMAKE_C_STANDARD_REQUIRED": "ON",
+        "CMAKE_C_EXTENSIONS": "OFF"
+      }
+    },
+    {
+      "name": "vs2026-x64-debug-config",
+      "displayName": "VS2026 x64 Debug",
+      "generator": "NMake Makefiles",
+      "binaryDir": "${sourceDir}/build/vs2026-x64-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_STANDARD": "99",
+        "CMAKE_C_STANDARD_REQUIRED": "ON",
+        "CMAKE_C_EXTENSIONS": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "vs2026-x64-release",
+      "displayName": "VS2026 x64 Release",
+      "configurePreset": "vs2026-x64"
+    },
+    {
+      "name": "vs2026-x64-debug",
+      "displayName": "VS2026 x64 Debug",
+      "configurePreset": "vs2026-x64-debug-config"
+    }
+  ]
+}

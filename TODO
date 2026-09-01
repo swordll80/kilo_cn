@@ -1,10 +1,10 @@
-IMPORTANT
-===
+重要事项
+========
 
-* Testing and stability to reach "usable" level.
+* 持续测试和提高稳定性，使项目达到可用水平。
 
-MAYBE
-===
+可选事项
+========
 
-* Send alternate screen sequences if TERM=xterm: "\033[?1049h" and "\033[?1049l"
-* Improve internals to be more understandable.
+* 当 TERM=xterm 时发送备用屏幕序列："\033[?1049h" 和 "\033[?1049l"。
+* 继续整理内部实现，使代码更容易理解。
