@@ -1,0 +1,16 @@
+{
+  "name": "jsmn",
+  "keywords": "json",
+  "description": "用 C 编写的极简 JSON 解析器和标记器，适合资源受限或嵌入式项目集成",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/zserge/jsmn.git"
+  },
+  "frameworks": "*",
+  "platforms": "*",
+  "examples": [
+    "example/*.c"
+  ],
+  "exclude": "test"
+}

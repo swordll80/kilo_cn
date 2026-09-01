@@ -56,6 +56,16 @@ Windows 运行时需要支持 ANSI/VT100 输出序列的终端，推荐 Windows 
 较新的 Windows 控制台；程序启动时会自动设置 UTF-8 输出代码页。程序是控制台
 应用，不要使用 `WIN32` 子系统配置。
 
+根 CMake 还集成了 `jsmn-cn` 极简 JSON 解析器：默认会构建
+`jsmn_simple_example`、`jsmn_jsondump_example` 及四个 CTest 测试变体。运行
+测试：
+
+```powershell
+ctest --test-dir build/vs2026-x64 -C Release --output-on-failure
+```
+
+jsmn 的中文 API、标记模型和集成说明见 [`jsmn-cn/README.md`](jsmn-cn/README.md)。
+
 ### GCC / Make
 
 ```bash

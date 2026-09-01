@@ -1,1 +1,6 @@
 kilo
+build/
+out/
+CMakeUserPresets.json
+.vs/
+
