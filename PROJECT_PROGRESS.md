@@ -32,7 +32,7 @@
 | 18 | inih-cn CMake 配置 | 新增独立 CMake 入口、静态/DLL、C++ INIReader、示例和 CTest 配置；根 CMake 可选集成 | 已实现 | CMake/MSVC 实际构建结果见 inih 验证记录 |
 | 19 | inih-cn Windows 支持 | MSVC `/utf-8`、`/W4`、DLL 导入导出宏、MinGW 兼容和 `_wfopen` 路径说明 | 已实现 | INI 文件内容不做自动编码转换；目标机 Unicode 路径仍需调用方使用 `_wfopen` |
 | 20 | inih-cn CTest 回归 | 15 个 C 测试变体使用跨平台 CMake 脚本比较 baseline 输出 | 已验证 | MSVC x64 Release/Debug 均为 15/15 通过 |
-| 21 | sds-cn 中文化 | 中文 README、源码注释、测试输出、Changelog、Make/CMake 入口；保留 SDS C API、动态头部布局和 BSD 法律文本 | 已实现/已验证 | GCC 与 VS2026 MSVC 均完成 46 项回归；真实项目接入和分配器替换仍需单独验证 |
+| 21 | sds-cn 中文化 | 中文 README、源码注释、测试输出、Changelog、Make/CMake 入口；保留 SDS C API、动态头部布局和 BSD 法律文本；Windows 测试入口设置 UTF-8 输出代码页 | 已实现/已验证 | GCC 与 VS2026 MSVC 均完成 46 项回归；重定向文件的查看器编码、真实项目接入和分配器替换仍需单独验证 |
 
 ## 3. 代码结构与数据管理风格
 
@@ -291,6 +291,8 @@ Unicode 路径、DLL 外部部署和 Linux GCC/Make 构建。
   目标和 CTest 也共 20/20 通过。
 - MSVC 构建保留上游窄类型转换和变量遮蔽警告，但无编译错误；测试中的 1 MiB
   基准数组已移到静态存储区，避免 Windows 默认栈空间导致运行时异常。
+- Windows `sds_test` 测试入口设置 `CP_UTF8` 后，控制台中文状态文字按 UTF-8 输出；
+  SDS 库本身不修改宿主程序的控制台代码页。输出重定向文件的查看器编码尚未验证。
 - 尚未覆盖真实项目接入、跨模块分配器替换、Windows/MSVC 目标机运行和中文
   文本按字节处理边界；这些不应标记为已验证。
 

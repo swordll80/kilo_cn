@@ -39,6 +39,10 @@
 #include "sds.h"
 #include "sdsalloc.h"
 
+#if defined(SDS_TEST_MAIN) && defined(_WIN32)
+#include <windows.h>
+#endif
+
 #if defined(_MSC_VER) && !defined(va_copy)
 /* MSVC 的 va_list 可以直接复制；为 C99 接口补充 va_copy 兼容宏。 */
 #define va_copy(destination, source) ((destination) = (source))
@@ -1244,6 +1248,10 @@ int sdsTest(void) {
 
 #ifdef SDS_TEST_MAIN
 int main(void) {
+#if defined(_WIN32)
+    /* 测试输出使用 UTF-8；库本身不修改宿主程序的控制台代码页。 */
+    SetConsoleOutputCP(CP_UTF8);
+#endif
     return sdsTest();
 }
 #endif
