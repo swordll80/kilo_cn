@@ -27,6 +27,8 @@ kilo [文件名]
 
 Windows 下打开文件时会自动识别 UTF-8 或 CP936/GBK；GBK 文件在内存中转换为
 UTF-8 后显示和编辑，保存时转换回 CP936，以兼容已有中文源文件。
+Windows 键盘输入使用 Unicode 宽字符读取，再转换为 UTF-8 后写入编辑缓冲区，
+中文输入不会再按本地代码页字节直接输出。
 
 ## 构建
 
@@ -56,8 +58,8 @@ Windows 运行时需要支持 ANSI/VT100 输出序列的终端，推荐 Windows 
 较新的 Windows 控制台；程序启动时会自动设置 UTF-8 输出代码页。程序是控制台
 应用，不要使用 `WIN32` 子系统配置。
 
-根 CMake 还集成了 `jsmn-cn` 极简 JSON 解析器：默认会构建
-`jsmn_simple_example`、`jsmn_jsondump_example` 及四个 CTest 测试变体。运行
+根 CMake 还集成了 `jsmn-cn` 极简 JSON 标记解析器和 `inih-cn` INI 解析器：
+默认会构建 jsmn 示例/测试，以及 inih 的 C/C++ 示例和 CTest 回归测试。运行
 测试：
 
 ```powershell
@@ -65,6 +67,9 @@ ctest --test-dir build/vs2026-x64 -C Release --output-on-failure
 ```
 
 jsmn 的中文 API、标记模型和集成说明见 [`jsmn-cn/README.md`](jsmn-cn/README.md)。
+inih 的中文注释、C/C++ API、Windows CMake 预设和编码边界见
+[`inih-cn/README.md`](inih-cn/README.md)。如果只需要 Kilo，可配置
+`-DKILO_BUILD_JSMN=OFF -DKILO_BUILD_INIH=OFF`。
 
 ### GCC / Make
 

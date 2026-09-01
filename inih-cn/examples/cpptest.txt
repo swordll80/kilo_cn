@@ -1,0 +1,14 @@
+已从 'test.ini' 加载配置：version=6, unsigned version=6, trillion=1000000000000, unsigned trillion=1000000000000, name=Bob Smith, email=bob@smith.com, pi=3.14159, active=1
+值是否存在：user.name=1, user.nose=0
+section 是否存在：user=1, fizz=0
+Sections：
+- protocol
+- user
+section [protocol] 中的键：
+- version
+section [user] 中的键：
+- active
+- email
+- name
+- pi
+- trillion

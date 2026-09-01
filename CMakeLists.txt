@@ -75,3 +75,11 @@ if(KILO_BUILD_JSMN)
         endforeach()
     endif()
 endif()
+
+option(KILO_BUILD_INIH "构建 inih-cn INI 解析器、示例和单元测试" ON)
+
+if(KILO_BUILD_INIH)
+    # inih-cn 同时提供 C API 和可选的 C++ INIReader 封装；其子目录
+    # CMakeLists.txt 负责 Windows/MSVC、MinGW 和 CTest 的具体配置。
+    add_subdirectory(inih-cn)
+endif()

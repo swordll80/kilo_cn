@@ -1,11 +1,12 @@
-# Kilo 中文化、jsmn-cn 集成与 VS2026 CMake 支持总结
+# Kilo 中文化、jsmn-cn/inih-cn 集成与 VS2026 CMake 支持总结
 
 ## 1. 项目概况
 
-本项目包含 Kilo 单文件终端文本编辑器和 `jsmn-cn` 极简 JSON 标记解析器。
-Kilo 的核心数据模型仍然是按字节保存的行数组，终端界面仍然通过 VT100/ANSI
-转义序列刷新；jsmn 仍保持单头文件、无第三方依赖和原始 API。本次工作只补充
-中文体验、注释、说明文档和 Windows/VS2026 CMake 集成，不引入大型依赖。
+本项目包含 Kilo 单文件终端文本编辑器、`jsmn-cn` 极简 JSON 标记解析器和
+`inih-cn` INI 文件解析器。Kilo 的核心数据模型仍然是按字节保存的行数组，
+终端界面仍然通过 VT100/ANSI 转义序列刷新；jsmn 仍保持单头文件、inih 仍
+保持原始 C/C++ API、解析状态机和测试输入。本次工作只补充中文体验、注释、
+说明文档和 Windows/VS2026 CMake 集成，不引入大型依赖。
 
 ## 2. 需求进度
 
@@ -18,13 +19,19 @@ Kilo 的核心数据模型仍然是按字节保存的行数组，终端界面仍
 | 5 | Windows 控制台运行 | 适配原始输入、扩展按键、窗口尺寸、ANSI 输出和文件截断 | 部分实现 | 依赖支持 ANSI/VT100 的 Windows Terminal 或新式控制台 |
 | 6 | 保持原有功能 | 保留打开、编辑、保存、搜索、语法高亮、滚动和未保存退出保护 | 已实现 | 尚未进行完整交互回归 |
 | 7 | 修复调试运行乱码 | Windows 启动时将控制台输出代码页设置为 UTF-8，使中文窄字符串提示可正确显示 | 已实现 | 重定向到不支持 UTF-8 的外部查看器时仍取决于查看器编码 |
-| 8 | 无文件名新建和保存 | 无参数启动空白文档；首次 `Ctrl-S` 询问文件名，留空时保存为默认 `temp.c` | 已实现 | Windows 默认位于 exe 所在目录，其他系统位于当前目录；尚未完整回归复杂路径和输入法 |
+| 8 | 无文件名新建和保存 | 无参数启动空白文档；首次 `Ctrl-S` 询问文件名，留空时保存为默认 `temp.c` | 已实现 | Windows 默认位于 exe 所在目录，其他系统位于当前目录；尚未完整回归复杂路径和中文输入法 |
 | 9 | 中文注释显示 | 修复 UTF-8 高位字节传入 ctype 函数时被误判为不可打印，并兼容 CP936/GBK 文件显示 | 已实现 | 中文仍按字节计算列宽，正好落在窗口边界时可能截断显示 |
 | 10 | 删除安装目标 | 移除 CMake 的 `install()` 规则，避免生成 `INSTALL`/“安装”构建目标；仍保留 Release/Debug 编译 | 已实现 | 只生成并使用构建目录中的 exe，不提供安装包或安装目录 |
 | 11 | jsmn 中文化 | 将 `jsmn-cn` 的 README、API 说明、示例和测试输出改为中文，保留 C API、宏和 JSON 示例字段 | 已实现 | MIT 许可证法律文本保留原文 |
 | 12 | jsmn 注释补全 | 为标记模型、解析状态、字符串转义、原始值、严格模式和测试辅助函数补充中文注释 | 已实现 | 只改注释和诊断文本，未改解析算法 |
 | 13 | jsmn 合并根 CMake | 根 `CMakeLists.txt` 提供 `jsmn` INTERFACE 头文件目标、两个示例和四个测试变体 | 已实现 | 通过 `KILO_BUILD_JSMN=OFF` 可只构建 Kilo |
-| 14 | jsmn CTest 回归 | 接入默认、`JSMN_STRICT`、`JSMN_PARENT_LINKS` 和组合模式测试 | 已验证 | VS2026 x64 Release/Debug 均配置、构建通过，CTest 四项全通过 |
+| 14 | jsmn CTest 回归 | 接入默认、`JSMN_STRICT`、`JSMN_PARENT_LINKS` 和组合模式测试 | 已验证 | 历史记录为 VS2026 x64 Release/Debug 均配置、构建通过，当前未重新执行 |
+| 15 | 中文键盘输入 | Windows 使用 `_getwch` 读取 Unicode 字符，转换为 UTF-8 字节队列后交给现有编辑逻辑 | 已实现 | 仍需在真实 Windows Terminal 中完整回归输入法、组合键和超宽字符 |
+| 16 | inih-cn 注释中文化 | 翻译 C/C++ 头文件、解析实现、示例、测试辅助代码和模糊测试注释；保留 SPDX、版权和 API 标识 | 已实现 | 解析算法、公开函数名、宏名和测试输入未改 |
+| 17 | inih-cn 文档总结 | 新增中文 README，记录 API、解析规则、宏选项、目录职责、Windows 编码边界和验证命令 | 已实现 | 上游链接和 BSD-3-Clause 法律文本保留 |
+| 18 | inih-cn CMake 配置 | 新增独立 CMake 入口、静态/DLL、C++ INIReader、示例和 CTest 配置；根 CMake 可选集成 | 已实现 | CMake/MSVC 实际构建结果见 inih 验证记录 |
+| 19 | inih-cn Windows 支持 | MSVC `/utf-8`、`/W4`、DLL 导入导出宏、MinGW 兼容和 `_wfopen` 路径说明 | 已实现 | INI 文件内容不做自动编码转换；目标机 Unicode 路径仍需调用方使用 `_wfopen` |
+| 20 | inih-cn CTest 回归 | 15 个 C 测试变体使用跨平台 CMake 脚本比较 baseline 输出 | 已验证 | MSVC x64 Release/Debug 均为 15/15 通过 |
 
 ## 3. 代码结构与数据管理风格
 
@@ -44,7 +51,8 @@ Kilo 的核心数据模型仍然是按字节保存的行数组，终端界面仍
 - 普通提示使用中文，快捷键和 API/协议名称保留英文标识，例如 `Ctrl-S`、
   `VT100`、`MSVC`。
 - Linux 分支继续使用 `termios`、`ioctl` 和 `SIGWINCH`；Windows 分支使用
-  Win32 控制台 API 和 `_getch`，通过条件编译隔离平台差异。
+  Win32 控制台 API 和 `_getwch`，通过条件编译隔离平台差异；Unicode 输入转换为
+  UTF-8 后复用现有单字节编辑逻辑。
 - CMake 目标为控制台应用 `kilo`，不使用 `WIN32` 子系统；MSVC 源文件编码
   明确设置为 UTF-8。
 
@@ -65,12 +73,14 @@ Kilo 的核心数据模型仍然是按字节保存的行数组，终端界面仍
   中文注释不会再被当作不可打印字符替换。
 - Windows 会检测 UTF-8/CP936；打开 CP936 文件时转换为 UTF-8 供编辑器使用，保存
   时转换回 CP936，保持已有中文文件的编码兼容性。
+- Windows 键盘输入通过 `_getwch` 获取 Unicode 字符，并拆分为 UTF-8 字节交给原有
+  编辑逻辑，避免中文输入直接产生 GBK/UTF-8 混用。
 
 ### 部分实现
 
 - 编辑器仍按字节而非 Unicode 码点计算光标和列宽；这符合原项目设计，但中文
   全角字符可能出现光标对齐偏差。
-- Windows 输入使用 `_getch`，适合控制台按键；复杂输入法、组合键和重定向输入
+- Windows 输入使用 `_getwch`，中文字符会转换为 UTF-8 字节队列；复杂输入法、组合键和重定向输入
   不在本次范围内。
 
 ### 待验证
@@ -151,6 +161,8 @@ ctest --test-dir build/vs2026-x64 -C Release --output-on-failure
   UTF-8 字符截断仍属于按字节列宽计算的已知限制。
 - 已使用现有 CP936/GBK 编码的 `build/vs2026-x64/temp.c` 复现并验证，屏幕显示从
   `��` 修复为正确的“整数”“注释”。
+- 中文键盘输入路径已改为 `_getwch` + UTF-8 队列；本次已完成编译验证，真实输入法
+  行为仍需人工回归。
 - PTY 输出同时显示中文长行在列边界处会按字节截断，这是当前字节模型的已知限制，
   不代表文件内容被修改。
 - 编辑、搜索、手动输入文件名保存、窗口调整大小和未保存退出保护尚未完成完整回归。
@@ -163,7 +175,80 @@ ctest --test-dir build/vs2026-x64 -C Release --output-on-failure
   同等回归。
 - Linux GCC/Make 及真实终端回归仍待执行。
 
-## 9. 推荐验证命令
+## 9. inih-cn 子项目说明
+
+### 目录与职责
+
+- `inih-cn/ini.c`、`inih-cn/ini.h`：无第三方依赖的 C INI 解析器和公开 API；
+- `inih-cn/cpp/`：保存键值并提供类型转换的 `INIReader` C++ 封装；
+- `inih-cn/examples/`：C、C++、X-Macros 和 INI 转储示例；
+- `inih-cn/tests/`：解析规则、长行、错误、字符串输入和堆分配测试；
+- `inih-cn/fuzzing/`：模糊测试辅助程序和脚本；
+- `inih-cn/CMakeLists.txt`：静态库/DLL、INIReader、示例和 CTest 入口；
+- `inih-cn/CMakePresets.json`：Windows x64 Release/Debug 的 NMake 预设；
+- `inih-cn/README.md`：中文使用说明、配置选项和验证边界。
+
+### 数据与 API 约定
+
+- C API 将输入缓冲区中的 section/name/value 以 `const char*` 传给回调，数据只
+  在回调期间有效；需要持久化时由调用方复制；
+- `ini_parse()` 返回 0 表示成功，正数表示首个错误行号，-1 表示文件打开失败，
+  -2 表示堆分配失败；
+- `INIReader` 将键按 `section=name` 组合并转为小写后存入 `std::map`，重复键的
+  多行值按换行拼接；
+- Windows 文件名接口不做编码猜测。需要 Unicode 路径时，由调用方 `_wfopen()`
+  后调用 `ini_parse_file()`；INI 内容本身仍按原始字节解释。
+
+### CMake 目标与构建风格
+
+- `inih`：C 静态库，`INIH_BUILD_SHARED=ON` 时构建 DLL；
+- `INIReader`：可选 C++11 库，依赖 `inih`；
+- `inih_example`、`inih_ini_dump`、`inih_ini_xmacros`：C 示例；
+- `inih_inireader_example`、`inih_inireader_errors`：C++ 示例；
+- `inih_test_*`：15 个 C 回归测试，CTest 使用 `tests/verify_output.cmake` 比较
+  `baseline_*.txt`（统一 CRLF/LF 换行差异），不依赖 Bash、`diff` 或 `tcc`；
+- MSVC 目标统一使用 `/W4 /utf-8` 和 `_CRT_SECURE_NO_WARNINGS`，其他编译器
+  使用 `-Wall -Wextra -pedantic`；不引入 Qt、vcpkg 或大型第三方库。
+
+## 10. inih-cn 验证记录
+
+### 当前状态
+
+- 已完成中文注释、README、示例提示和 C++ `ParseErrorMessage()` 的局部修改；
+- 已完成独立 `CMakeLists.txt`、Windows Release/Debug 预设和跨平台基线校验脚本；
+- 已在 Visual Studio 2026 x64 Developer Command Prompt、MSVC 19.51 下完成
+  Release/Debug 静态库构建、C++ 封装构建和 15/15 CTest；Release DLL 构建和
+  C/C++ 示例运行也已完成；
+- 已使用 Qt MinGW-w64 GCC 15.2 和 `mingw32-make` 完成 Release 静态库、C++
+  封装、示例构建和 15/15 CTest；
+- 已在根目录集成构建中完成 Kilo、jsmn 和 inih 目标构建，根 CTest 19/19 通过；
+- 旧有 Meson、`unittest.bat` 和 `unittest.sh` 入口未删除，便于与上游对照。
+
+### 推荐验证命令
+
+在 Visual Studio Developer Command Prompt（x64）中：
+
+```powershell
+cd C:\codex\kilo_cn\inih-cn
+cmake --preset windows-x64-release
+cmake --build --preset windows-x64-release --parallel
+ctest --test-dir build/windows-x64-release --output-on-failure
+```
+
+根目录集成验证：
+
+```powershell
+cd C:\codex\kilo_cn
+cmake --preset vs2026-x64
+cmake --build --preset vs2026-x64-release --parallel
+ctest --test-dir build/vs2026-x64 -C Release --output-on-failure
+```
+
+验证时继续分别记录：CMake/编译/CTest 静态证据、示例进程运行证据，以及真实
+Windows 目标机上的 Unicode 路径和 DLL 部署证据。当前尚未覆盖真实目标机的
+Unicode 路径、DLL 外部部署和 Linux GCC/Make 构建。
+
+## 11. 推荐验证命令
 
 ```powershell
 cmake --preset vs2026-x64
